@@ -27,6 +27,16 @@ const COLUMN_KEYS_BY_INDEX = [
   'appPlatform',
 ];
 
+function mapHeadersToColumnKeys(headers) {
+  return headers.map((header, index) => {
+    if (index === headers.length - 1) {
+      return 'appPlatform';
+    }
+
+    return COLUMN_MAP[header] || null;
+  });
+}
+
 /**
  * Parse an uploaded file (.xlsx or .csv) into an array of row objects.
  *
@@ -63,7 +73,7 @@ export async function parseFile(file) {
 
         if (hasHeaders) {
           // Map headers to our column keys
-          columnMapping = firstRow.map((header) => COLUMN_MAP[header] || null);
+          columnMapping = mapHeadersToColumnKeys(firstRow);
           dataRows = rawRows.slice(1);
         } else {
           // No recognizable headers, map by index
@@ -171,10 +181,8 @@ export function parsePastedText(text) {
   let columnMapping = COLUMN_KEYS_BY_INDEX;
 
   if (parsedRows.length > 0 && isHeaderRow(parsedRows[0])) {
-    columnMapping = parsedRows[0].map((header) => {
-      const normalized = String(header || '').toLowerCase().trim();
-      return COLUMN_MAP[normalized] || null;
-    });
+    const normalizedHeaders = parsedRows[0].map((header) => String(header || '').toLowerCase().trim());
+    columnMapping = mapHeadersToColumnKeys(normalizedHeaders);
     dataRows = parsedRows.slice(1);
   }
 
