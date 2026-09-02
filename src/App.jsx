@@ -21,6 +21,7 @@ export default function App() {
     updateCell,
     addRow,
     deleteRow,
+    duplicateRow,
     setRows,
     resetRows,
     toggleRowHidden,
@@ -67,6 +68,7 @@ export default function App() {
             rows={rows}
             onUpdateCell={updateCell}
             onDeleteRow={deleteRow}
+            onDuplicateRow={duplicateRow}
             onAddRow={addRow}
             onSetRows={setRows}
             onResetRows={resetRows}

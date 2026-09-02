@@ -240,6 +240,24 @@ html, body, #root {
   background: #dbeafe;
 }
 
+.data-grid .duplicate-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #cbd5e1;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.data-grid .duplicate-btn:hover {
+  color: #2563eb;
+  background: #dbeafe;
+}
+
 .data-grid .delete-btn {
   background: none;
   border: none;

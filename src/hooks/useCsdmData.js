@@ -111,6 +111,16 @@ export function useCsdmData() {
     });
   }, []);
 
+  const duplicateRow = useCallback((rowIndex) => {
+    setRowsState((prev) => {
+      if (rowIndex < 0 || rowIndex >= prev.length) return prev;
+      const copy = { ...prev[rowIndex] };
+      const updated = [...prev];
+      updated.splice(rowIndex + 1, 0, copy);
+      return updated;
+    });
+  }, []);
+
   const setRows = useCallback((newRows) => {
     if (Array.isArray(newRows) && newRows.length > 0) {
       setRowsState(normalizeRows(newRows));
@@ -178,6 +188,7 @@ export function useCsdmData() {
     updateCell,
     addRow,
     deleteRow,
+    duplicateRow,
     setRows,
     resetRows,
     toggleRowHidden,

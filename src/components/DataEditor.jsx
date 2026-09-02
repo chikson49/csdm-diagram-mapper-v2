@@ -13,6 +13,7 @@ export default function DataEditor({
   rows,
   onUpdateCell,
   onDeleteRow,
+  onDuplicateRow,
   onAddRow,
   onSetRows,
   onResetRows,
@@ -299,6 +300,7 @@ export default function DataEditor({
         rows={rows}
         onUpdateCell={onUpdateCell}
         onDeleteRow={onDeleteRow}
+        onDuplicateRow={onDuplicateRow}
         onToggleRowHidden={onToggleRowHidden}
         searchTerm={searchTerm}
       />

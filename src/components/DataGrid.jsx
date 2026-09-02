@@ -12,7 +12,7 @@ const COLUMNS = [
   { key: 'appPlatform',       label: 'App/Platform/CI' },
 ];
 
-export default function DataGrid({ rows, onUpdateCell, onDeleteRow, onToggleRowHidden, searchTerm = '' }) {
+export default function DataGrid({ rows, onUpdateCell, onDeleteRow, onDuplicateRow, onToggleRowHidden, searchTerm = '' }) {
   const query = (searchTerm || '').trim().toLowerCase();
 
   return (
@@ -25,6 +25,7 @@ export default function DataGrid({ rows, onUpdateCell, onDeleteRow, onToggleRowH
               <th key={col.key}>{col.label}</th>
             ))}
             <th style={{ width: '40px' }} title="Hide/Unhide Row"></th>
+            <th style={{ width: '40px' }} title="Duplicate Row"></th>
             <th style={{ width: '40px' }} title="Delete Row"></th>
           </tr>
         </thead>
@@ -94,6 +95,19 @@ export default function DataGrid({ rows, onUpdateCell, onDeleteRow, onToggleRowH
                         <circle cx="12" cy="12" r="3" />
                       </svg>
                     )}
+                  </button>
+                </td>
+                <td className="action-cell">
+                  <button
+                    className="duplicate-btn"
+                    onClick={() => onDuplicateRow(rowIndex)}
+                    title="Duplicate row"
+                    aria-label={`Duplicate row ${rowIndex + 1}`}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
                   </button>
                 </td>
                 <td className="action-cell">
