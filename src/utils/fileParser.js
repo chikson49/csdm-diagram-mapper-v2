@@ -1,49 +1,38 @@
 /**
  * fileParser.js
- * Parses .xlsx and .csv files into row objects
- * using the `xlsx` library.
+ * Parses .xlsx and .csv files, and pasted TSV/CSV text, into row objects
+ * by mapping columns positionally to the active model's column keys
+ * (header text is not matched since it may vary between sheets).
  */
 
 import * as XLSX from 'xlsx';
 
-// Expected column headers (case-insensitive matching)
-const COLUMN_MAP = {
-  'business capability': 'businessCapability',
-  'business service': 'businessService',
-  'service offering': 'serviceOffering',
-  'service instance': 'serviceInstance',
-  'app/platform/ci': 'appPlatform',
-  'app': 'appPlatform',
-  'platform': 'appPlatform',
-  'ci': 'appPlatform',
-};
+function createEmptyRowObject(columns) {
+  const obj = {};
+  for (const col of columns) {
+    obj[col.key] = '';
+  }
+  return obj;
+}
 
-// Fallback: map by column index if headers don't match
-const COLUMN_KEYS_BY_INDEX = [
-  'businessCapability',
-  'businessService',
-  'serviceOffering',
-  'serviceInstance',
-  'appPlatform',
-];
-
-function mapHeadersToColumnKeys(headers) {
-  return headers.map((header, index) => {
-    if (index === headers.length - 1) {
-      return 'appPlatform';
-    }
-
-    return COLUMN_MAP[header] || null;
-  });
+function rowCellsToObject(cells, columns) {
+  const obj = createEmptyRowObject(columns);
+  for (let i = 0; i < Math.min(cells.length, columns.length); i++) {
+    obj[columns[i].key] = String(cells[i] ?? '').trim();
+  }
+  return obj;
 }
 
 /**
  * Parse an uploaded file (.xlsx or .csv) into an array of row objects.
+ * The first row is always treated as a header row and skipped; remaining
+ * rows are mapped positionally to `columns`.
  *
  * @param {File} file - The uploaded file
+ * @param {Array<{key: string}>} columns - Active model's columns, in order
  * @returns {Promise<Array<Object>>} - Array of row objects
  */
-export async function parseFile(file) {
+export async function parseFile(file, columns) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -64,43 +53,12 @@ export async function parseFile(file) {
           return;
         }
 
-        // Try to detect header row
-        const firstRow = rawRows[0].map((cell) => String(cell || '').toLowerCase().trim());
-        const hasHeaders = firstRow.some((cell) => COLUMN_MAP[cell]);
-
-        let dataRows;
-        let columnMapping;
-
-        if (hasHeaders) {
-          // Map headers to our column keys
-          columnMapping = mapHeadersToColumnKeys(firstRow);
-          dataRows = rawRows.slice(1);
-        } else {
-          // No recognizable headers, map by index
-          columnMapping = COLUMN_KEYS_BY_INDEX;
-          dataRows = rawRows;
-        }
+        // First row is always a header row and gets skipped
+        const dataRows = rawRows.slice(1);
 
         const rows = dataRows
           .filter((row) => row.some((cell) => cell != null && String(cell).trim() !== ''))
-          .map((row) => {
-            const obj = {
-              businessCapability: '',
-              businessService: '',
-              serviceOffering: '',
-              serviceInstance: '',
-              appPlatform: '',
-            };
-
-            for (let i = 0; i < Math.min(row.length, columnMapping.length); i++) {
-              const key = columnMapping[i];
-              if (key) {
-                obj[key] = String(row[i] || '').trim();
-              }
-            }
-
-            return obj;
-          });
+          .map((row) => rowCellsToObject(row, columns));
 
         resolve(rows);
       } catch (error) {
@@ -145,28 +103,16 @@ function parseDelimitedLine(line, delimiter) {
   return cells;
 }
 
-function isHeaderRow(cells) {
-  const normalized = cells.map((c) => String(c || '').toLowerCase().trim());
-  return normalized.some((cell) => COLUMN_MAP[cell]);
-}
-
-function createEmptyRowObject() {
-  return {
-    businessCapability: '',
-    businessService: '',
-    serviceOffering: '',
-    serviceInstance: '',
-    appPlatform: '',
-  };
-}
-
 /**
- * Parse pasted tab-separated or comma-separated text into row objects.
+ * Parse pasted tab-separated or comma-separated text into row objects,
+ * mapping columns positionally to `columns`.
  *
  * @param {string} text - TSV or CSV text
+ * @param {Array<{key: string}>} columns - Active model's columns, in order
+ * @param {{hasHeaderRow?: boolean}} [options] - Whether the first line is a header row to skip
  * @returns {Array<Object>} - Array of row objects
  */
-export function parsePastedText(text) {
+export function parsePastedText(text, columns, { hasHeaderRow = true } = {}) {
   if (!text || !text.trim()) return [];
 
   const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
@@ -177,26 +123,9 @@ export function parsePastedText(text) {
   const delimiter = lines[0].includes('\t') ? '\t' : ',';
   const parsedRows = lines.map((line) => parseDelimitedLine(line, delimiter));
 
-  let dataRows = parsedRows;
-  let columnMapping = COLUMN_KEYS_BY_INDEX;
-
-  if (parsedRows.length > 0 && isHeaderRow(parsedRows[0])) {
-    const normalizedHeaders = parsedRows[0].map((header) => String(header || '').toLowerCase().trim());
-    columnMapping = mapHeadersToColumnKeys(normalizedHeaders);
-    dataRows = parsedRows.slice(1);
-  }
+  const dataRows = hasHeaderRow ? parsedRows.slice(1) : parsedRows;
 
   return dataRows
-    .map((cells) => {
-      const row = createEmptyRowObject();
-
-      for (let i = 0; i < Math.min(cells.length, columnMapping.length); i++) {
-        const key = columnMapping[i];
-        if (!key) continue;
-        row[key] = String(cells[i] || '').trim();
-      }
-
-      return row;
-    })
+    .map((cells) => rowCellsToObject(cells, columns))
     .filter((row) => Object.values(row).some((v) => v !== ''));
 }

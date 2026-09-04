@@ -57,7 +57,7 @@ function getLineageNodeIds(selectedNodeId, edges) {
   return lineage;
 }
 
-function DiagramCanvas({ rows, searchTerm }) {
+function DiagramCanvas({ rows, searchTerm, columns }) {
   const { fitView, getNodes } = useReactFlow();
   const [selectedNodeId, setSelectedNodeId] = useState(null);
 
@@ -66,10 +66,10 @@ function DiagramCanvas({ rows, searchTerm }) {
   // test
   // Build and layout graph whenever rows or searchTerm changes
   const { layoutedNodes, layoutedEdges } = useMemo(() => {
-    const { nodes, edges } = buildGraph(rows, searchTerm);
+    const { nodes, edges } = buildGraph(rows, searchTerm, columns);
     const positioned = layoutGraph(nodes, edges);
     return { layoutedNodes: positioned, layoutedEdges: edges };
-  }, [rows, searchTerm]);
+  }, [rows, searchTerm, columns]);
 
   // Calculate lineage node set if a node is clicked
   const lineageSet = useMemo(() => {
@@ -160,7 +160,7 @@ function DiagramCanvas({ rows, searchTerm }) {
   );
 }
 
-export default function DiagramViewer({ rows, diagramRef, searchTerm }) {
+export default function DiagramViewer({ rows, diagramRef, searchTerm, columns }) {
   return (
     <div
       ref={diagramRef}
@@ -196,10 +196,10 @@ export default function DiagramViewer({ rows, diagramRef, searchTerm }) {
       </div>
 
       {/* React Flow Canvas */}
-      <DiagramCanvas rows={rows} searchTerm={searchTerm} />
+      <DiagramCanvas rows={rows} searchTerm={searchTerm} columns={columns} />
 
       {/* Legend overlay */}
-      <Legend />
+      <Legend columns={columns} />
     </div>
   );
 }

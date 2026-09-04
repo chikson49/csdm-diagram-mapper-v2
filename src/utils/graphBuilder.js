@@ -4,14 +4,6 @@
  * for React Flow rendering, including search matching flags.
  */
 
-const COLUMNS = [
-  { key: 'businessCapability', layer: 'capability', label: 'Business Capability' },
-  { key: 'businessService',    layer: 'service',    label: 'Business Service' },
-  { key: 'serviceOffering',    layer: 'offering',   label: 'Service Offering' },
-  { key: 'serviceInstance',    layer: 'instance',   label: 'Service Instance' },
-  { key: 'appPlatform',       layer: 'app',        label: 'App/Platform/CI' },
-];
-
 /**
  * Build a graph (nodes + edges) from the table rows.
  * Deduplicates nodes with the same layer::value key and
@@ -19,9 +11,10 @@ const COLUMNS = [
  *
  * @param {Array<Object>} rows - Array of row objects
  * @param {string} [searchTerm=''] - Active filter query
+ * @param {Array<{key: string, layer: string, label: string}>} columns - Active model's columns, in hierarchy order
  * @returns {{ nodes: Array, edges: Array }}
  */
-export function buildGraph(rows, searchTerm = '') {
+export function buildGraph(rows, searchTerm = '', columns) {
   const nodeMap = new Map();   // id -> node
   const edgeSet = new Set();   // "source->target" for dedup
   const edges = [];
@@ -31,7 +24,7 @@ export function buildGraph(rows, searchTerm = '') {
   for (const row of rows) {
     let prevNodeId = null;
 
-    for (const col of COLUMNS) {
+    for (const col of columns) {
       const value = (row[col.key] || '').trim();
       if (!value) continue;
 

@@ -10,6 +10,9 @@
   --color-csdm-offering: #6dac48;
   --color-csdm-instance: #ff9b01;
   --color-csdm-app: #2e76b7;
+  --color-csdm-tech-service: #ff9b01;
+  --color-csdm-tech-offering: #e07b00;
+  --color-csdm-ci: #2e76b7;
   --color-navbar: #c0392b;
   --color-navbar-dark: #a93226;
   --color-surface: #ffffff;
@@ -124,6 +127,9 @@ html, body, #root {
 .csdm-node.offering   { background: var(--color-csdm-offering); }
 .csdm-node.instance   { background: var(--color-csdm-instance); }
 .csdm-node.app        { background: var(--color-csdm-app); }
+.csdm-node.techService  { background: var(--color-csdm-tech-service); }
+.csdm-node.techOffering { background: var(--color-csdm-tech-offering); }
+.csdm-node.ci           { background: var(--color-csdm-ci); }
 
 .csdm-node.search-match {
   outline: 3px solid #f59e0b;

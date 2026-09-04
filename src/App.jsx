@@ -18,6 +18,8 @@ import { exportAsMermaid } from './utils/mermaidExporter';
 export default function App() {
   const {
     rows,
+    model,
+    setModel,
     updateCell,
     addRow,
     deleteRow,
@@ -36,7 +38,7 @@ export default function App() {
   const handleExport = useCallback(
     async (type) => {
       if (type === 'mermaid') {
-        exportAsMermaid(visibleRows);
+        exportAsMermaid(visibleRows, model.columns);
         return;
       }
       if (!diagramRef.current) return;
@@ -44,7 +46,7 @@ export default function App() {
         await exportAsPng(diagramRef.current, () => window.__getReactFlowNodes?.() || []);
       }
     },
-    [visibleRows]
+    [visibleRows, model.columns]
   );
 
   return (
@@ -66,6 +68,8 @@ export default function App() {
         <Panel defaultSize="40" minSize="25" maxSize="65">
           <DataEditor
             rows={rows}
+            model={model}
+            onSetModel={setModel}
             onUpdateCell={updateCell}
             onDeleteRow={deleteRow}
             onDuplicateRow={duplicateRow}
@@ -87,7 +91,7 @@ export default function App() {
         {/* Right: Diagram Viewer */}
         <Panel defaultSize="60" minSize="35">
           <ReactFlowProvider>
-            <DiagramViewer rows={visibleRows} diagramRef={diagramRef} searchTerm={searchTerm} />
+            <DiagramViewer rows={visibleRows} diagramRef={diagramRef} searchTerm={searchTerm} columns={model.columns} />
           </ReactFlowProvider>
         </Panel>
       </Group>
