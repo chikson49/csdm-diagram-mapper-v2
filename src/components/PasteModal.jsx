@@ -6,13 +6,16 @@
 import { useState } from 'react';
 import { parsePastedText } from '../utils/fileParser';
 
-export default function PasteModal({ isOpen, onClose, onImport }) {
+export default function PasteModal({ isOpen, onClose, onImport, model }) {
   const [text, setText] = useState('');
+  const [hasHeaderRow, setHasHeaderRow] = useState(true);
 
   if (!isOpen) return null;
 
+  const columns = model.columns;
+
   const handleImport = () => {
-    const rows = parsePastedText(text);
+    const rows = parsePastedText(text, columns, { hasHeaderRow });
     if (rows.length > 0) {
       onImport(rows);
       setText('');
@@ -26,6 +29,13 @@ export default function PasteModal({ isOpen, onClose, onImport }) {
     }
   };
 
+  const sampleLines = model.sampleData
+    .slice(0, 2)
+    .map((row) => columns.map((col) => row[col.key] || '').join('\t'));
+  const placeholder = hasHeaderRow
+    ? [columns.map((col) => col.label).join('\t'), ...sampleLines].join('\n')
+    : sampleLines.join('\n');
+
   return (
     <div className="modal-backdrop" onClick={handleBackdropClick}>
       <div className="modal-content">
@@ -33,13 +43,21 @@ export default function PasteModal({ isOpen, onClose, onImport }) {
         <p>
           Paste tab-separated or comma-separated data below. You can copy rows directly from
           Google Sheets, Excel, or any spreadsheet application. CSV text is also supported.
-          Each row should have 5 columns:
-          <strong> Business Capability, Business Service, Service Offering, Service Instance, App/Platform/CI</strong>.
+          Each row should have {columns.length} columns:
+          <strong> {columns.map((col) => col.label).join(', ')}</strong>.
         </p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', marginBottom: '8px' }}>
+          <input
+            type="checkbox"
+            checked={hasHeaderRow}
+            onChange={(e) => setHasHeaderRow(e.target.checked)}
+          />
+          First row contains headers
+        </label>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder={`Portfolio Management\tRetail Banking\tStandard Offering\tTest Instance\tOracle DB\nRetail Banking\tRetail Banking\tStandard Offering\tTest Instance 1\tOracle DB`}
+          placeholder={placeholder}
           autoFocus
         />
         <div className="modal-actions">

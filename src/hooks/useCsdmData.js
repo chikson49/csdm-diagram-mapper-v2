@@ -1,96 +1,78 @@
 /**
  * useCsdmData.js
  * Central state management hook for the CSDM grid data.
- * Includes LocalStorage auto-persistence and reset capability.
+ * Includes LocalStorage auto-persistence, reset capability, and
+ * switching between CSDM level models (e.g. standard vs technical).
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { CSDM_MODELS, DEFAULT_MODEL_ID, ACTIVE_MODEL_STORAGE_KEY } from '../utils/csdmModels';
 
-const STORAGE_KEY = 'csdm_vibe_mapper_grid_data';
-
-function normalizeRow(row = {}) {
-  return {
-    businessCapability: row.businessCapability || '',
-    businessService: row.businessService || '',
-    serviceOffering: row.serviceOffering || '',
-    serviceInstance: row.serviceInstance || '',
-    appPlatform: row.appPlatform || '',
-    isHidden: Boolean(row.isHidden),
-  };
+function normalizeRow(row = {}, columns) {
+  const normalized = { isHidden: Boolean(row.isHidden) };
+  for (const col of columns) {
+    normalized[col.key] = row[col.key] || '';
+  }
+  return normalized;
 }
 
-function normalizeRows(rows = []) {
-  return rows.map((row) => normalizeRow(row));
+function normalizeRows(rows = [], columns) {
+  return rows.map((row) => normalizeRow(row, columns));
 }
 
-function createEmptyRow() {
-  return normalizeRow();
+function createEmptyRow(columns) {
+  return normalizeRow({}, columns);
 }
 
-const INITIAL_DATA = [
-  {
-    businessCapability: 'Portfolio Management',
-    businessService: 'Retail Banking',
-    serviceOffering: 'Standard Offering',
-    serviceInstance: 'Test Instance',
-    appPlatform: 'Oracle DB',
-  },
-  {
-    businessCapability: 'Portfolio Management',
-    businessService: 'Retail Banking',
-    serviceOffering: 'Standard Offering',
-    serviceInstance: 'Test Instance 1',
-    appPlatform: 'Oracle DB',
-  },
-  {
-    businessCapability: 'Portfolio Management',
-    businessService: '',
-    serviceOffering: 'Standard Offering',
-    serviceInstance: 'Test Instance 2',
-    appPlatform: 'Oracle DB',
-  },
-  {
-    businessCapability: 'Retail Banking',
-    businessService: 'Retail Banking',
-    serviceOffering: 'Standard Offering',
-    serviceInstance: 'Test Instance',
-    appPlatform: 'Oracle DB',
-  },
-  {
-    businessCapability: 'Retail Banking',
-    businessService: 'Retail Banking',
-    serviceOffering: 'Standard Offering',
-    serviceInstance: 'Test Instance 3',
-    appPlatform: 'Oracle DB',
-  },
-];
-
-function getSavedRows() {
+function getInitialModelId() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(ACTIVE_MODEL_STORAGE_KEY);
+    if (saved && CSDM_MODELS[saved]) return saved;
+  } catch (err) {
+    console.error('Failed to load saved CSDM model:', err);
+  }
+  return DEFAULT_MODEL_ID;
+}
+
+function getSavedRows(model) {
+  try {
+    const saved = localStorage.getItem(model.storageKey);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return normalizeRows(parsed);
+        return normalizeRows(parsed, model.columns);
       }
     }
   } catch (err) {
     console.error('Failed to load saved CSDM data:', err);
   }
-  return normalizeRows(INITIAL_DATA);
+  return normalizeRows(model.sampleData, model.columns);
 }
 
 export function useCsdmData() {
-  const [rows, setRowsState] = useState(getSavedRows);
+  const [modelId, setModelId] = useState(getInitialModelId);
+  const model = useMemo(() => CSDM_MODELS[modelId], [modelId]);
+  const [rows, setRowsState] = useState(() => getSavedRows(model));
 
-  // Auto-save changes to localStorage
+  // Auto-save changes to localStorage (per-model)
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+      localStorage.setItem(model.storageKey, JSON.stringify(rows));
     } catch (err) {
       console.error('Failed to save CSDM data:', err);
     }
-  }, [rows]);
+  }, [rows, model.storageKey]);
+
+  const setModel = useCallback((newModelId) => {
+    if (!CSDM_MODELS[newModelId] || newModelId === modelId) return;
+    try {
+      localStorage.setItem(ACTIVE_MODEL_STORAGE_KEY, newModelId);
+    } catch (err) {
+      console.error('Failed to save active CSDM model:', err);
+    }
+    setModelId(newModelId);
+    setRowsState(getSavedRows(CSDM_MODELS[newModelId]));
+  }, [modelId]);
 
   const updateCell = useCallback((rowIndex, key, value) => {
     setRowsState((prev) => {
@@ -101,8 +83,8 @@ export function useCsdmData() {
   }, []);
 
   const addRow = useCallback(() => {
-    setRowsState((prev) => [...prev, createEmptyRow()]);
-  }, []);
+    setRowsState((prev) => [...prev, createEmptyRow(model.columns)]);
+  }, [model.columns]);
 
   const deleteRow = useCallback((rowIndex) => {
     setRowsState((prev) => {
@@ -123,13 +105,13 @@ export function useCsdmData() {
 
   const setRows = useCallback((newRows) => {
     if (Array.isArray(newRows) && newRows.length > 0) {
-      setRowsState(normalizeRows(newRows));
+      setRowsState(normalizeRows(newRows, model.columns));
     }
-  }, []);
+  }, [model.columns]);
 
   const resetRows = useCallback(() => {
-    setRowsState(normalizeRows(INITIAL_DATA));
-  }, []);
+    setRowsState(normalizeRows(model.sampleData, model.columns));
+  }, [model.columns, model.sampleData]);
 
   const toggleRowHidden = useCallback((rowIndex) => {
     setRowsState((prev) => {
@@ -185,6 +167,8 @@ export function useCsdmData() {
 
   return {
     rows,
+    model,
+    setModel,
     updateCell,
     addRow,
     deleteRow,

@@ -8,9 +8,12 @@ import DataGrid from './DataGrid';
 import PasteModal from './PasteModal';
 import { parseFile } from '../utils/fileParser';
 import { exportTableToExcel } from '../utils/tableExporter';
+import { CSDM_MODELS } from '../utils/csdmModels';
 
 export default function DataEditor({
   rows,
+  model,
+  onSetModel,
   onUpdateCell,
   onDeleteRow,
   onDuplicateRow,
@@ -52,7 +55,7 @@ export default function DataEditor({
 
     setIsImporting(true);
     try {
-      const parsed = await parseFile(file);
+      const parsed = await parseFile(file, model.columns);
       if (parsed.length > 0) {
         onSetRows(parsed);
       }
@@ -105,11 +108,31 @@ export default function DataEditor({
           style={{
             fontSize: '12.5px',
             color: '#64748b',
-            margin: '4px 0 14px 0',
+            margin: '4px 0 10px 0',
           }}
         >
           Interactive grid linked directly to live CSDM diagram visualization.
         </p>
+
+        {/* Model Switcher */}
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
+          {Object.values(CSDM_MODELS).map((m) => (
+            <button
+              key={m.id}
+              className={m.id === model.id ? 'btn btn-primary' : 'btn btn-secondary'}
+              onClick={() => {
+                if (m.id === model.id) return;
+                if (confirm(`Switch to "${m.label}" model? Your current grid stays saved for when you switch back.`)) {
+                  onSetModel(m.id);
+                }
+              }}
+              style={{ padding: '4px 10px', fontSize: '11.5px' }}
+              title={`Switch to ${m.label}`}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
 
         {/* Search / Filter Bar */}
         <div style={{ marginBottom: '14px', position: 'relative' }}>
@@ -207,7 +230,7 @@ export default function DataEditor({
 
         <button
           className="btn btn-secondary"
-          onClick={() => exportTableToExcel(rows)}
+          onClick={() => exportTableToExcel(rows, model.columns)}
           title="Export edited grid data to Excel file"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -298,6 +321,7 @@ export default function DataEditor({
       {/* Grid */}
       <DataGrid
         rows={rows}
+        columns={model.columns}
         onUpdateCell={onUpdateCell}
         onDeleteRow={onDeleteRow}
         onDuplicateRow={onDuplicateRow}
@@ -310,6 +334,7 @@ export default function DataEditor({
         isOpen={isPasteModalOpen}
         onClose={() => setIsPasteModalOpen(false)}
         onImport={onSetRows}
+        model={model}
       />
     </div>
   );

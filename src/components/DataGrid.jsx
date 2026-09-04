@@ -4,15 +4,7 @@
  * inline editing, and per-row delete buttons.
  */
 
-const COLUMNS = [
-  { key: 'businessCapability', label: 'Business Capability' },
-  { key: 'businessService',    label: 'Business Service' },
-  { key: 'serviceOffering',    label: 'Service Offering' },
-  { key: 'serviceInstance',    label: 'Service Instance' },
-  { key: 'appPlatform',       label: 'App/Platform/CI' },
-];
-
-export default function DataGrid({ rows, onUpdateCell, onDeleteRow, onDuplicateRow, onToggleRowHidden, searchTerm = '' }) {
+export default function DataGrid({ rows, columns, onUpdateCell, onDeleteRow, onDuplicateRow, onToggleRowHidden, searchTerm = '' }) {
   const query = (searchTerm || '').trim().toLowerCase();
 
   return (
@@ -21,7 +13,7 @@ export default function DataGrid({ rows, onUpdateCell, onDeleteRow, onDuplicateR
         <thead>
           <tr>
             <th style={{ width: '40px', textAlign: 'center' }}>#</th>
-            {COLUMNS.map((col) => (
+            {columns.map((col) => (
               <th key={col.key}>{col.label}</th>
             ))}
             <th style={{ width: '40px' }} title="Hide/Unhide Row"></th>
@@ -34,7 +26,7 @@ export default function DataGrid({ rows, onUpdateCell, onDeleteRow, onDuplicateR
             const isHidden = Boolean(row.isHidden);
             const isRowMatch =
               query &&
-              COLUMNS.some(
+              columns.some(
                 (col) =>
                   row[col.key] &&
                   row[col.key].toLowerCase().includes(query)
@@ -50,7 +42,7 @@ export default function DataGrid({ rows, onUpdateCell, onDeleteRow, onDuplicateR
                 className={isHidden ? 'row-hidden' : undefined}
               >
                 <td className="row-num">{rowIndex + 1}</td>
-                {COLUMNS.map((col) => {
+                {columns.map((col) => {
                   const val = row[col.key] || '';
                   const isCellMatch = query && val.toLowerCase().includes(query);
 
