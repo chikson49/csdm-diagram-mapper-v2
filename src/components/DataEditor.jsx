@@ -115,7 +115,7 @@ export default function DataEditor({
         </p>
 
         {/* Model Switcher */}
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
           {Object.values(CSDM_MODELS).map((m) => (
             <button
               key={m.id}

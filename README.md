@@ -21,6 +21,32 @@ Use Node.js 22.12 or later in the Node 22 series, as declared in `package.json`.
 
 ---
 
+## CSDM Models
+
+Select Standard (5-level), Technical CSDM (6-level), or Extended CSDM (8-level)
+in the data editor. Each model keeps its own saved rows, column labels, and
+hidden levels. Switching models does not convert or replace another model's data.
+
+Extended CSDM uses this top-to-bottom hierarchy and import column order:
+
+| Level | Column | Color |
+| --- | --- | --- |
+| 1 | Business Capability | Purple |
+| 2 | Business Service | Dark green |
+| 3 | Business Service Offering | Light green |
+| 4 | Service Instance | Orange |
+| 5 | Technology Management Service | Dark orange |
+| 6 | Technology Management Service Offering | Light orange |
+| 7 | Business Application [HOST] | Dark blue |
+| 8 | Business Application [APP] | Light blue |
+
+For CSV/XLSX imports, select the model first and arrange columns in the order
+above. The first row is treated as a header; header names are not matched.
+For pasted CSV/TSV data, set the header-row checkbox to match your source.
+The diagram, legend, Excel, Mermaid, and PNG exports use the selected model.
+
+---
+
 ## Public Hosting on Azure Static Web Apps (Free)
 
 This deployment is publicly accessible without visitor sign-in or VPN. Get

@@ -4,6 +4,15 @@ All changes made during implementation are logged here in reverse chronological 
 
 ---
 
+## [2026-09-25] - Extended CSDM (8-level)
+- Added a third model with independently saved data and four complete sample mappings.
+- Hierarchy: Business Capability > Business Service > Business Service Offering > Service Instance > Technology Management Service > Technology Management Service Offering > Business Application [HOST] > Business Application [APP].
+- Added dark/light orange technology management layers and dark/light blue HOST/APP layers, preserving existing model colors. Light fills use dark text in the diagram and Mermaid export.
+- Model selector buttons now wrap in narrow editor panels. Existing model-driven imports, visibility controls, legends, and exports support the new eight-column definition.
+- Documented the eight-column import order in README.md.
+
+---
+
 ## [2026-08-05 14:03] — Mermaid ClassDef Color Styling Export
 - **Action**: Updated [`mermaidExporter.js`](file:///c:/D/CSDM%20trial/src/utils/mermaidExporter.js) to append CSDM layer `classDef` color definitions and node class assignments (`class nodeID layerType;`) to exported `.mmd` files:
   - `classDef capability fill:#bf40ff,stroke:#333,stroke-width:2px,color:#fff;`

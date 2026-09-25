@@ -65,7 +65,7 @@ export function generateMermaidSyntax(rows, columns) {
 
   // Add Class Definitions for Color Styling
   for (const col of columns) {
-    syntax += `    classDef ${col.layer} fill:${col.color},stroke:#333,stroke-width:2px,color:#fff;\n`;
+    syntax += `    classDef ${col.layer} fill:${col.color},stroke:#333,stroke-width:2px,color:${col.textColor || '#fff'};\n`;
   }
   syntax += '\n';
 

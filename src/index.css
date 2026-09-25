@@ -13,6 +13,10 @@
   --color-csdm-tech-service: #ff9b01;
   --color-csdm-tech-offering: #e07b00;
   --color-csdm-ci: #2e76b7;
+  --color-csdm-management-service: #c65d00;
+  --color-csdm-management-offering: #ffbf69;
+  --color-csdm-app-host: #1e40af;
+  --color-csdm-app-app: #60a5fa;
   --color-navbar: #c0392b;
   --color-navbar-dark: #a93226;
   --color-surface: #ffffff;
@@ -128,6 +132,10 @@ html, body, #root {
 .csdm-node.instance   { background: var(--color-csdm-instance); }
 .csdm-node.app        { background: var(--color-csdm-app); }
 .csdm-node.techService  { background: var(--color-csdm-tech-service); }
+.csdm-node.technologyManagementService { background: var(--color-csdm-management-service); }
+.csdm-node.technologyManagementServiceOffering { background: var(--color-csdm-management-offering); color: var(--color-text-primary); }
+.csdm-node.appHost { background: var(--color-csdm-app-host); }
+.csdm-node.appApp { background: var(--color-csdm-app-app); color: var(--color-text-primary); }
 .csdm-node.techOffering { background: var(--color-csdm-tech-offering); }
 .csdm-node.ci           { background: var(--color-csdm-ci); }
 
